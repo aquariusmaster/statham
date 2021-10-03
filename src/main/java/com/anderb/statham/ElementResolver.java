@@ -1,6 +1,6 @@
 package com.anderb.statham;
 
 @FunctionalInterface
-public interface ElementResolver<E extends Enum<E>> {
-    ResolveResult resolveNext(String json, int start);
+public interface ElementResolver {
+    ResolveResult resolve(String json, int start);
 }

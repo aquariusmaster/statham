@@ -3,6 +3,7 @@ package com.anderb.statham;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 public class BaseHydrator implements Hydrator {
@@ -10,12 +11,18 @@ public class BaseHydrator implements Hydrator {
     @SneakyThrows
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T hydrate(Map<String, Object> jsonMap, Class<T> clazz) {
+    public <T> T hydrate(Object jsonObj, Class<T> clazz) {
         T instance = clazz.getDeclaredConstructor().newInstance();
+        if (jsonObj instanceof List) {
+            List jsonList = (List) jsonObj;
+            System.out.println(jsonList);
+            throw new IllegalArgumentException();
+        }
+        Map<String, Object> jsonMap = (Map<String, Object>) jsonObj;
         for (Field field : clazz.getDeclaredFields()) {
             Object value = jsonMap.get(field.getName());
             if (value instanceof Map) {
-                value = hydrate((Map<String, Object>) value, field.getType());
+                value = hydrate(value, field.getType());
             }
             setValueToField(instance, field, value);
         }
@@ -26,7 +33,7 @@ public class BaseHydrator implements Hydrator {
     private static <T> void setValueToField(T instance, Field field, Object value) {
 
         field.setAccessible(true);
-        if (!(value instanceof String)) {
+        if (value == null || !(value instanceof String)) {
             field.set(instance, value);
             return;
         }

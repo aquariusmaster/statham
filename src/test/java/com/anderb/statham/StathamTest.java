@@ -1,12 +1,11 @@
 package com.anderb.statham;
 
+import com.anderb.statham.resolvers.JsonParser;
 import lombok.Data;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class StathamTest {
 
@@ -25,12 +24,15 @@ class StathamTest {
                 "  \"address\": {\n" +
                 "    \"line1\": \"Kiev\",\n" +
                 "    \"line2\": \"Kopernika\"\n" +
-                "  },\n" +
+                "  }\n" +
                 "}";
-//        User user = jsonToObj(json, User.class);
-//        System.out.println(user);
+        User user = new Statham().jsonToObj(json, User.class);
+        System.out.println(user);
+    }
 
-        var json2 = "{\n" +
+    @Test
+    void parseToList() {
+        var json = "{\n" +
                 "  \"photos\": [\n" +
                 "    {\n" +
                 "      \"id\": 1,\n" +
@@ -72,12 +74,8 @@ class StathamTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        Map<String, Object> stringObjectMap = new Statham().parseToMap(json2);
+        Object stringObjectMap = JsonParser.parse(json);
         System.out.println(stringObjectMap);
-    }
-
-    @Test
-    void parseToList() {
     }
 
     @Data
