@@ -5,6 +5,7 @@ import lombok.Data;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,9 +77,8 @@ class StathamTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        assertEquals(1127, JsonParser.findEndElementIndex(json, '{', '}', 0));
-        Object stringObjectMap = JsonParser.parse(json);
-        System.out.println(stringObjectMap);
+        NasaRes nasaRes = new Statham().jsonToObj(json, NasaRes.class);
+        System.out.println(nasaRes);
     }
 
     @Test
@@ -111,8 +111,13 @@ class StathamTest {
     }
 
     @Data
-    static class TupleKey {
-        private String key;
-        private int line2;
+    static class NasaRes {
+        private List<Photo> photos;
     }
+
+    @Data
+    static class Photo {
+        private String img_src;
+    }
+
 }
