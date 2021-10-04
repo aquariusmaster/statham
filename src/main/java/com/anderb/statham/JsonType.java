@@ -21,9 +21,9 @@ public enum JsonType {
     ARRAY(JsonParser::parseToList),
     NO_MORE_ELEMENTS((json, start) -> noElement());
 
-    private final ValueResolver resolver;
+    private final ElementResolver resolver;
 
-    private final static Map<JsonType, ValueResolver> resolvers =
+    private final static Map<JsonType, ElementResolver> resolvers =
             Arrays.stream(values()).collect(toMap(identity(), JsonType::getResolver));
 
     public static ResolveResult resolve(JsonType type, String json, int start) {
