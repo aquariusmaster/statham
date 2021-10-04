@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,25 +43,31 @@ public class BaseHydrator implements Hydrator {
 
     @SneakyThrows
     private static <T> void setValueToField(T instance, Field field, Object value) {
-
         field.setAccessible(true);
-        if (!(value instanceof String)) {
-            field.set(instance, value);
-            return;
+        value = tryParseToNumber(value, field.getType());
+        field.set(instance, value);
+    }
+
+    private static Object tryParseToNumber(Object value, Class<?> type) {
+        if (!(value instanceof String)) return value;
+        String strValue = (String) value;
+        if (type == int.class || type == Integer.class) {
+            return Integer.parseInt(strValue);
+        } else if (type == long.class || type == Long.class) {
+            return Long.parseLong(strValue);
+        } else if (type == double.class || type == Double.class) {
+            return Double.parseDouble(strValue);
+        } else if (type == float.class || type == Float.class) {
+            return Float.parseFloat(strValue);
+        } else if (type == byte.class || type == Byte.class) {
+            return Byte.parseByte(strValue);
+        } else if (type == short.class || type == Short.class) {
+            return Short.parseShort(strValue);
+        } else if (type == BigInteger.class) {
+            return new BigInteger(strValue);
+        } else if (type == BigDecimal.class) {
+            return new BigDecimal(strValue);
         }
-        var strValue = (String) value;
-        if (field.getType().equals(String.class)) {
-            field.set(instance, strValue);
-        } else if (field.getType() == boolean.class || field.getType() == Boolean.class) {
-            field.set(instance, Boolean.parseBoolean(strValue));
-        } else if (field.getType() == int.class || field.getType() == Integer.class) {
-            field.set(instance, Integer.parseInt(strValue));
-        } else if (field.getType() == long.class || field.getType() == Long.class) {
-            field.set(instance, Long.parseLong(strValue));
-        } else if (field.getType() == double.class || field.getType() == Double.class) {
-            field.set(instance, Double.parseDouble(strValue));
-        } else {
-            System.out.println("Type is unsupported, ignoring");
-        }
+        return value;
     }
 }

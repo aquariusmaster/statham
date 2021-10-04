@@ -12,7 +12,10 @@ import static com.anderb.statham.ResolveResult.noElement;
 public class CommonValueResolver {
     private final static Map<JsonType, ValueResolver> resolvers =
             Map.of(
-                    ELEMENT, JsonParser::parseElementToString,
+                    STRING, JsonParser::parseToString,
+                    NUMBER, JsonParser::parseToNumber,
+                    BOOLEAN, JsonParser::parseToBoolean,
+                    NULL, JsonParser::parseToNull,
                     OBJECT, JsonParser::parseToObject,
                     ARRAY, JsonParser::parseToList,
                     NO_MORE_ELEMENTS, (json, start) -> noElement()

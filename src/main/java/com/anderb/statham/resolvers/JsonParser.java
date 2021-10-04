@@ -1,13 +1,11 @@
 package com.anderb.statham.resolvers;
 
-import com.anderb.statham.JsonType;
 import com.anderb.statham.KeyResolver;
 import com.anderb.statham.ResolveResult;
 import com.anderb.statham.ValueTypeResolver;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import static com.anderb.statham.JsonType.*;
 import static java.lang.Character.isWhitespace;
@@ -23,32 +21,46 @@ public class JsonParser {
     }
 
     public static ResolveResult keyResolver(String json, int start) {
-        int innerStart = json.indexOf("\"", start);
+        int innerStart = json.indexOf('\"', start);
         if (innerStart == -1) return ResolveResult.noElement();
         int end = json.indexOf("\":", innerStart);
         if (innerStart + 1 > end) return ResolveResult.noElement();
-        return ResolveResult.of(json.substring(innerStart + 1, end), ELEMENT, end);
+        return ResolveResult.of(json.substring(innerStart + 1, end), STRING, end);
     }
 
-    public static ResolveResult parseElementToString(String json, int start) {
+    public static ResolveResult parseToString(String json, int start) {
         start = skipWhiteSpace(json, start);
-        boolean isStringValue = json.charAt(start) == '"';
-        if (isStringValue) {
-            int end = json.indexOf('"', start + 1);
-            if (end == -1) return ResolveResult.noElement();
-            return ResolveResult.of(json.substring(start + 1, end), ELEMENT, end);
-        }
-        int end = json.indexOf(",", start + 1);
+        int end = json.indexOf('"', start + 1);
+        if (end == -1) return ResolveResult.noElement();
+        return ResolveResult.of(json.substring(start + 1, end), STRING, end);
+    }
+
+    public static ResolveResult parseToNumber(String json, int start) {
+        start = skipWhiteSpace(json, start);
+        int end = json.indexOf(',', start + 1);
         if (end == -1) return ResolveResult.noElement();
         var value = json.substring(start, end);
-        if (value.equals("null")) return ResolveResult.of(null, ELEMENT, end);
-        return ResolveResult.of(value, ELEMENT, end);
+        return ResolveResult.of(value, NUMBER, end);
+    }
+
+    public static ResolveResult parseToBoolean(String json, int start) {
+        start = skipWhiteSpace(json, start);
+        int end = json.indexOf(',', start + 1);
+        if (end == -1) return ResolveResult.noElement();
+        return ResolveResult.of(Boolean.parseBoolean(json.substring(start, end)), BOOLEAN, end);
+    }
+
+    public static ResolveResult parseToNull(String json, int start) {
+        start = skipWhiteSpace(json, start);
+        int end = json.indexOf(',', start + 1);
+        if (end == -1) return ResolveResult.noElement();
+        return ResolveResult.of(null, NULL, end);
     }
 
     public static ResolveResult parseToObject(String innerJson, int start) {
+        start = skipToNext(innerJson, start, '{');
+        innerJson = innerJson.substring(start, findEndElementIndex(innerJson, '{', '}', start) + 1);
         var jsonMap = new HashMap<String, Object>();
-        start = skipToNext(innerJson, start, OBJECT.getStartSymbol());
-        innerJson = innerJson.substring(start, findEndElementIndex(innerJson, OBJECT.getStartSymbol(), OBJECT.getEndSymbol(), start) + 1);
         int initStart = start;
         start = 1;
         while (start < innerJson.length()) {
@@ -68,14 +80,14 @@ public class JsonParser {
     }
 
     public static ResolveResult parseToList(String json, int start) {
-        List<Object> array = new ArrayList<>();
-        start = skipToNext(json, start, ARRAY.getStartSymbol());
-        json = json.substring(start, findEndElementIndex(json, ARRAY.getStartSymbol(), ARRAY.getEndSymbol(), start) + 1);
+        start = skipToNext(json, start, '[');
+        json = json.substring(start, findEndElementIndex(json, '[', ']', start) + 1);
+        var array = new ArrayList<>();
         int initStart = start;
         start = 1;
         while (start < json.length()) {
-            JsonType jsonType = valueTypeResolver.resolveType(json, start + 1);
-            var valRes = valueResolver.resolve(jsonType, json, start + 1);
+            var type = valueTypeResolver.resolveType(json, start + 1);
+            var valRes = valueResolver.resolve(type, json, start + 1);
             if (valRes.getElementType() == NO_MORE_ELEMENTS) break;
             array.add(valRes.getValue());
             start = valRes.getEnd() + 1;
@@ -96,21 +108,22 @@ public class JsonParser {
         throw new IllegalStateException("No ending element for starting symbol '" + startSym + "'");
     }
 
-    private static int skipWhiteSpace(String json, int start) {
+    public static int skipWhiteSpace(String json, int start) {
         while (start < json.length() && isWhitespace(json.charAt(start))) start++;
         return start;
     }
 
-    private static int skipToNext(String json, int start, char ch) {
+    public static int skipToNext(String json, int start, char ch) {
         while (start < json.length() && json.charAt(start) != ch) start++;
         return start;
     }
 
-    private static int countBetween(String json, int start, int end, char sym) {
+    public static int countBetween(String json, int start, int end, char sym) {
         int count = 0;
         for (int i = start + 1; i < end; i++) {
             if (json.charAt(i) == sym) count++;
         }
         return count;
     }
+
 }
