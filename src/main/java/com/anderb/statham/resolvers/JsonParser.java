@@ -46,7 +46,7 @@ public class JsonParser {
     public static ResolveResult parseToObject(String json, int start) {
         Map<String, Object> jsonMap = new HashMap<>();
         start = skipToNext(json, start, OBJECT.getStartSymbol());
-        json = json.substring(start, getTypeEnd(json, OBJECT, start));
+        json = json.substring(start, findEndElementIndex(json, OBJECT.getStartSymbol(), OBJECT.getEndSymbol(), start) + 1);
         int initStart = start;
         start = 1;
         while (start < json.length()) {
@@ -63,22 +63,25 @@ public class JsonParser {
             jsonMap.put((String) keyResult.getValue(), valueResult.getValue());
         }
 
-        System.out.println(jsonMap);
-        return ResolveResult.of(jsonMap, OBJECT, initStart + start);
+//        System.out.println("new Obj: " + jsonMap);
+        return ResolveResult.of(jsonMap, OBJECT, initStart + json.length());
     }
 
     public static ResolveResult parseToList(String json, int start) {
         List<Object> array = new ArrayList<>();
         start = skipToNext(json, start, ARRAY.getStartSymbol());
-        json = json.substring(start, getTypeEnd(json, ARRAY, start));
+        json = json.substring(start, findEndElementIndex(json, ARRAY.getStartSymbol(), ARRAY.getEndSymbol(), start) + 1);
+        int initStart = start;
+        start = 1;
         while (start < json.length()) {
             JsonType jsonType = valueTypeResolver.resolveType(json, start + 1);
             var valRes = valueResolver.resolve(jsonType, json, start + 1);
+            if (valRes.getElementType() == NO_MORE_ELEMENTS) break;
             array.add(valRes.getValue());
             start = valRes.getEnd() + 1;
         }
-        System.out.println(array);
-        return ResolveResult.of(array, ARRAY, start);
+//        System.out.println("new list: " + array);
+        return ResolveResult.of(array, ARRAY, initStart + json.length());
     }
 
     private static int skipWhiteSpace(String json, int start) {
@@ -91,16 +94,26 @@ public class JsonParser {
         return start;
     }
 
-    private static int getTypeEnd(String json, JsonType type, int start) {
-        int end = -1;
+    public static int findEndElementIndex(String json, char startSym, char endSym, int start) {
+        int midCount = 0;
         while (start < json.length()) {
-            end = json.indexOf(type.getEndSymbol(), start + 1);
-            if (end == -1) throw new IllegalStateException("No end for " + type.getStartSymbol()
-                    + ", element position " + start);
-            int innerElementStartPosition = json.indexOf(type.getStartSymbol(), start + 1);
-            if (innerElementStartPosition == -1 || innerElementStartPosition > end) break;
-            start = innerElementStartPosition + 1;
+            int end = json.indexOf(endSym, start + 1);
+            if (end == -1) break;
+            int betweenCount = countBetween(json, start, end, startSym);
+            if (betweenCount == 0 && midCount == 0) return end;
+            start = end + 1;
+            midCount+=betweenCount - 1;
         }
-        return end + 1;
+        throw new IllegalStateException("No ending element for starting symbol '" + startSym + "'");
+    }
+
+    private static int countBetween(String json, int start, int end, char sym) {
+        int count = 0;
+        for (int i = start + 1; i < end; i++) {
+            if (json.charAt(i) == sym) {
+                count++;
+            }
+        }
+        return count;
     }
 }

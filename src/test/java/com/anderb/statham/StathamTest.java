@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class StathamTest {
 
     @BeforeEach
@@ -74,8 +76,22 @@ class StathamTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
+        assertEquals(1127, JsonParser.findEndElementIndex(json, '{', '}', 0));
         Object stringObjectMap = JsonParser.parse(json);
         System.out.println(stringObjectMap);
+    }
+
+    @Test
+    void findEndElementIndex() {
+        String json =
+                "{\n" +
+                "  \"first\": {\n" +
+                "    \"second\": {\n" +
+                "      \"key\": \"value\" \n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+        assertEquals(63, JsonParser.findEndElementIndex(json, '{', '}', 0));
     }
 
     @Data
