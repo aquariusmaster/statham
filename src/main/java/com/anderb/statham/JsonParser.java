@@ -1,8 +1,4 @@
-package com.anderb.statham.resolvers;
-
-import com.anderb.statham.KeyResolver;
-import com.anderb.statham.ResolveResult;
-import com.anderb.statham.ValueTypeResolver;
+package com.anderb.statham;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,13 +7,12 @@ import static com.anderb.statham.JsonType.*;
 import static java.lang.Character.isWhitespace;
 
 public class JsonParser {
-    private static final KeyResolver keyResolver = JsonParser::keyResolver;
-    private static final ValueTypeResolver valueTypeResolver = new NextValueTypeResolver();
-    private static final CommonValueResolver valueResolver = new CommonValueResolver();
+    private static final ElementResolver keyResolver = JsonParser::keyResolver;
+    private static final TypeResolver valueTypeResolver = new NextValueTypeResolver();
 
     public static Object parse(String json) {
         var type = valueTypeResolver.resolveType(json, 0);
-        return valueResolver.resolve(type, json, 0).getValue();
+        return JsonType.resolve(type, json, 0).getValue();
     }
 
     public static ResolveResult keyResolver(String json, int start) {
@@ -71,7 +66,7 @@ public class JsonParser {
             var type = valueTypeResolver.resolveType(innerJson, start);
             if (type == NO_MORE_ELEMENTS) break;
 
-            var valueResult = valueResolver.resolve(type, innerJson, start);
+            var valueResult = JsonType.resolve(type, innerJson, start);
             start = valueResult.getEnd() + 1;
 
             jsonMap.put((String) keyResult.getValue(), valueResult.getValue());
@@ -87,7 +82,7 @@ public class JsonParser {
         start = 1;
         while (start < json.length()) {
             var type = valueTypeResolver.resolveType(json, start + 1);
-            var valRes = valueResolver.resolve(type, json, start + 1);
+            var valRes = JsonType.resolve(type, json, start + 1);
             if (valRes.getElementType() == NO_MORE_ELEMENTS) break;
             array.add(valRes.getValue());
             start = valRes.getEnd() + 1;

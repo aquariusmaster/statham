@@ -1,11 +1,8 @@
-package com.anderb.statham.resolvers;
-
-import com.anderb.statham.JsonType;
-import com.anderb.statham.ValueTypeResolver;
+package com.anderb.statham;
 
 import static com.anderb.statham.JsonType.*;
 
-public class NextValueTypeResolver implements ValueTypeResolver {
+public class NextValueTypeResolver implements TypeResolver {
     @Override
     public JsonType resolveType(String json, int start) {
         start = JsonParser.skipWhiteSpace(json, start);

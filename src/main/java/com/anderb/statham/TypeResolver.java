@@ -1,6 +1,6 @@
 package com.anderb.statham;
 
 @FunctionalInterface
-public interface ValueTypeResolver {
+public interface TypeResolver {
     JsonType resolveType(String json, int start);
 }

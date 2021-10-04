@@ -1,6 +1,5 @@
 package com.anderb.statham;
 
-import com.anderb.statham.resolvers.JsonParser;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
