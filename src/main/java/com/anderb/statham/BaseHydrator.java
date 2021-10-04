@@ -17,15 +17,15 @@ public class BaseHydrator implements Hydrator {
         if (jsonObj instanceof List) {
             return (T) hydrateList((List) jsonObj, clazz);
         }
-        Map<String, Object> jsonMap = (Map<String, Object>) jsonObj;
+        var jsonMap = (Map<String, Object>) jsonObj;
         T instance = clazz.getDeclaredConstructor().newInstance();
-        for (Field field : clazz.getDeclaredFields()) {
-            Object value = jsonMap.get(field.getName());
+        for (var field : clazz.getDeclaredFields()) {
+            var value = jsonMap.get(field.getName());
             if (value instanceof Map) {
                 value = hydrate(value, field.getType());
             }
             if (value instanceof List) {
-                ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                var listType = (ParameterizedType) field.getGenericType();
                 value = hydrateList((List) value, (Class<?>) listType.getActualTypeArguments()[0]);
             }
             setValueToField(instance, field, value);
@@ -47,7 +47,7 @@ public class BaseHydrator implements Hydrator {
             field.set(instance, value);
             return;
         }
-        String strValue = (String) value;
+        var strValue = (String) value;
         if (field.getType().equals(String.class)) {
             field.set(instance, strValue);
         } else if (field.getType() == boolean.class || field.getType() == Boolean.class) {

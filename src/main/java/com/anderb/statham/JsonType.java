@@ -5,7 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @RequiredArgsConstructor
 @Getter
@@ -25,7 +26,7 @@ public enum JsonType {
 
     private static final List<JsonType> listWithStartSymbol = Arrays.stream(values())
             .filter(type -> type.getStartSymbol() != (char) -1)
-            .collect(Collectors.toList());
+            .collect(toList());
 
     public static List<JsonType> valuesWithStartDefined() {
         return listWithStartSymbol;

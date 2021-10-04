@@ -3,7 +3,7 @@ package com.anderb.statham;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import static com.anderb.statham.JsonType.*;
+import static com.anderb.statham.JsonType.NO_MORE_ELEMENTS;
 
 @RequiredArgsConstructor
 @Getter

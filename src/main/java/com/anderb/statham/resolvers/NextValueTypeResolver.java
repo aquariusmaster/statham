@@ -20,7 +20,7 @@ public class NextValueTypeResolver implements ValueTypeResolver {
     }
 
     private JsonType resolveType(char ch) {
-        for (JsonType type : JsonType.valuesWithStartDefined()) {
+        for (var type : JsonType.valuesWithStartDefined()) {
             if (type.getStartSymbol() == ch) return type;
         }
         return ELEMENT;
