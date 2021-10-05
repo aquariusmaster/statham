@@ -1,15 +1,10 @@
 package com.anderb.statham;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JsonParserTest {
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     void parse() {
@@ -67,14 +62,12 @@ class JsonParserTest {
     void countBetween() {
         assertEquals(5, JsonParser.countBetween(
                 "{\n" +
-                "   {\n" +
-                "       {\n" +
-                "           {\n" +
-                "               {\n" +
-                "                   {", 0, 66, '{'));
+                        "   {\n" +
+                        "       {\n" +
+                        "           {\n" +
+                        "               {\n" +
+                        "                   {", 0, 66, '{'));
         assertEquals(0, JsonParser.countBetween("", 0, "".length(), '{'));
         assertEquals(5, JsonParser.countBetween("[][][][][][][][][]", 0, 10, ']'));
-
-
     }
 }

@@ -13,6 +13,35 @@ import java.util.stream.Collectors;
 public class BaseHydrator implements Hydrator {
 
     @SneakyThrows
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public <T> T hydrate(Object jsonObj, Class<T> clazz) {
+        if (jsonObj instanceof List) {
+            return (T) hydrateList((List) jsonObj, clazz);
+        }
+        var jsonMap = (Map<String, Object>) jsonObj;
+        T instance = clazz.getDeclaredConstructor().newInstance();
+        for (var field : clazz.getDeclaredFields()) {
+            var value = jsonMap.get(field.getName());
+            if (value instanceof Map) {
+                value = hydrate(value, field.getType());
+            }
+            if (value instanceof List) {
+                var listType = (ParameterizedType) field.getGenericType();
+                value = hydrateList((List) value, (Class<?>) listType.getActualTypeArguments()[0]);
+            }
+            setValueToField(instance, field, value);
+        }
+        return instance;
+    }
+
+    private <T> List<T> hydrateList(List<T> value, Class<T> clazz) {
+        return value.stream()
+                .map(obj -> hydrate(obj, clazz))
+                .collect(Collectors.toList());
+    }
+
+    @SneakyThrows
     private static <T> void setValueToField(T instance, Field field, Object value) {
         field.setAccessible(true);
         value = tryParseToNumber(value, field.getType());
@@ -40,34 +69,5 @@ public class BaseHydrator implements Hydrator {
             return new BigDecimal(strValue);
         }
         return value;
-    }
-
-    @SneakyThrows
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Override
-    public <T> T hydrate(Object jsonObj, Class<T> clazz) {
-        if (jsonObj instanceof List) {
-            return (T) hydrateList((List) jsonObj, clazz);
-        }
-        var jsonMap = (Map<String, Object>) jsonObj;
-        T instance = clazz.getDeclaredConstructor().newInstance();
-        for (var field : clazz.getDeclaredFields()) {
-            var value = jsonMap.get(field.getName());
-            if (value instanceof Map) {
-                value = hydrate(value, field.getType());
-            }
-            if (value instanceof List) {
-                var listType = (ParameterizedType) field.getGenericType();
-                value = hydrateList((List) value, (Class<?>) listType.getActualTypeArguments()[0]);
-            }
-            setValueToField(instance, field, value);
-        }
-        return instance;
-    }
-
-    private <T> List<T> hydrateList(List<T> value, Class<T> clazz) {
-        return value.stream()
-                .map(obj -> hydrate(obj, clazz))
-                .collect(Collectors.toList());
     }
 }

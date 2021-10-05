@@ -1,17 +1,19 @@
 package com.anderb.statham;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import static com.anderb.statham.JsonType.*;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Character.isWhitespace;
 
+@UtilityClass
 public class JsonParser {
-    private static final ElementParser keyParser = JsonParser::parseKey;
-    private static final JsonTypeResolver typeResolver = new NextValueTypeResolver();
 
     public static Object parse(String json) {
-        var type = typeResolver.resolveType(json, 0);
+        var type = resolveType(json, 0);
         return type.getParser().parse(json, 0).getValue();
     }
 
@@ -42,7 +44,7 @@ public class JsonParser {
         startFrom = skipWhiteSpaces(json, startFrom);
         int end = json.indexOf(',', startFrom + 1);
         if (end == -1) return JsonResult.empty();
-        return JsonResult.of(Boolean.parseBoolean(json.substring(startFrom, end)), BOOLEAN, end);
+        return JsonResult.of(parseBoolean(json.substring(startFrom, end)), BOOLEAN, end);
     }
 
     public static JsonResult parseToNull(String json, int startFrom) {
@@ -59,11 +61,11 @@ public class JsonParser {
         int initStart = startFrom;
         startFrom = 1;
         while (startFrom < innerJson.length()) {
-            var keyResult = keyParser.parse(innerJson, startFrom + 1);
+            var keyResult = parseKey(innerJson, startFrom + 1);
             if (keyResult.getElementType() == EMPTY) break;
             startFrom = keyResult.getEnd() + 2;
 
-            var type = typeResolver.resolveType(innerJson, startFrom);
+            var type = resolveType(innerJson, startFrom);
             if (type == EMPTY) break;
 
             var valueResult = type.getParser().parse(innerJson, startFrom);
@@ -81,13 +83,25 @@ public class JsonParser {
         int initStart = startFrom;
         startFrom = 1;
         while (startFrom < json.length()) {
-            var type = typeResolver.resolveType(json, startFrom + 1);
+            var type = resolveType(json, startFrom + 1);
             var valRes = type.getParser().parse(json, startFrom + 1);
             if (valRes.getElementType() == EMPTY) break;
             array.add(valRes.getValue());
             startFrom = valRes.getEnd() + 1;
         }
         return JsonResult.of(array, ARRAY, initStart + json.length());
+    }
+
+    public static JsonType resolveType(String json, int start) {
+        start = JsonParser.skipWhiteSpaces(json, start);
+        char ch = json.charAt(start);
+        if (ch == '"') return STRING;
+        if (Character.isDigit(ch)) return NUMBER;
+        if (ch == 't' || ch == 'f') return BOOLEAN;
+        if (ch == 'n') return NULL;
+        if (ch == '{') return OBJECT;
+        if (ch == '[') return ARRAY;
+        return EMPTY;
     }
 
     public static int findEndingElementIndex(String json, char startChar, char endChar, int startFrom) {

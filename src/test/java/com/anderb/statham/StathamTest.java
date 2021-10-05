@@ -1,21 +1,14 @@
 package com.anderb.statham;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
+import com.anderb.statham.TestUtils.Address;
+import com.anderb.statham.TestUtils.NasaRes;
+import com.anderb.statham.TestUtils.User;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class StathamTest {
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     void jsonToObj() {
@@ -30,8 +23,17 @@ class StathamTest {
                 "    \"line2\": \"Kopernika\"\n" +
                 "  }\n" +
                 "}";
-        User user = new Statham().jsonToObj(json, User.class);
-        System.out.println(user);
+        User actual = new Statham().jsonToObj(json, User.class);
+        assertNotNull(actual);
+        User expected = new User(
+                "Andrii",
+                "Shtramak",
+                "shtramak@gmail.com",
+                19,
+                true,
+                new Address("Kiev", "Kopernika")
+        );
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -90,32 +92,6 @@ class StathamTest {
                 "http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/00010/opgs/edr/ccam/CR0_398381687EDR_F0030000CCAM05010M_.JPG",
                 nasaRes.getPhotos().get(1).getImg_src()
         );
-    }
-
-    @Data
-    static class User {
-        private String firstName;
-        private String lastName;
-        private String email;
-        private Integer age;
-        private boolean active;
-        private Address address;
-    }
-
-    @Data
-    static class Address {
-        private String line1;
-        private String line2;
-    }
-
-    @Data
-    static class NasaRes {
-        private List<Photo> photos;
-    }
-
-    @Data
-    static class Photo {
-        private String img_src;
     }
 
 }
