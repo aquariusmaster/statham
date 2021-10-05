@@ -5,39 +5,43 @@ import com.anderb.statham.TestUtils.NasaRes;
 import com.anderb.statham.TestUtils.User;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class StathamTest {
 
     @Test
-    void jsonToObj() {
+    void parseToObj_withInnerObject() {
         var json = "{\n" +
                 "  \"firstName\": \"Andrii\",\n" +
-                "  \"lastName\": \"Shtramak\",\n" +
-                "  \"email\": \"shtramak@gmail.com\",\n" +
+                "  \"lastName\": \"Petrov\",\n" +
+                "  \"email\": \"apetrov@gmail.com\",\n" +
                 "  \"active\": true,\n" +
                 "  \"age\": 19,\n" +
                 "  \"address\": {\n" +
                 "    \"line1\": \"Kiev\",\n" +
-                "    \"line2\": \"Kopernika\"\n" +
+                "    \"line2\": \"Svitla\"\n" +
                 "  }\n" +
                 "}";
         User actual = new Statham().jsonToObj(json, User.class);
         assertNotNull(actual);
         User expected = new User(
                 "Andrii",
-                "Shtramak",
-                "shtramak@gmail.com",
+                "Petrov",
+                "apetrov@gmail.com",
                 19,
                 true,
-                new Address("Kiev", "Kopernika")
+                new Address("Kiev", "Svitla")
         );
         assertEquals(expected, actual);
     }
 
     @Test
-    void parseToList() {
+    void parseToObj_withList() {
         var json = "{\n" +
                 "  \"photos\": [\n" +
                 "    {\n" +
@@ -91,6 +95,27 @@ class StathamTest {
         assertEquals(
                 "http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/00010/opgs/edr/ccam/CR0_398381687EDR_F0030000CCAM05010M_.JPG",
                 nasaRes.getPhotos().get(1).getImg_src()
+        );
+    }
+
+    @Test
+    void parseToObj_largeObject() throws IOException {
+        String json = Files.readString(Paths.get("/home/anderb/workspace/IdeaProjects/ajson/src/test/resources/large.json"));
+        NasaRes nasaRes = new Statham().jsonToObj(json, NasaRes.class);
+        assertNotNull(nasaRes);
+        assertNotNull(nasaRes.getPhotos());
+        assertEquals(856, nasaRes.getPhotos().size());
+        assertEquals(
+                "http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/01000/opgs/edr/fcam/FLB_486265257EDR_F0481570FHAZ00323M_.JPG",
+                nasaRes.getPhotos().get(0).getImg_src()
+        );
+        assertEquals(
+                "http://mars.jpl.nasa.gov/msl-raw-images/msss/01000/mcam/1000ML0044630750405172I01_DXXX.jpg",
+                nasaRes.getPhotos().get(400).getImg_src()
+        );
+        assertEquals(
+                "http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/01000/opgs/edr/ncam/NRB_486270860EDR_F0481570NCAM00323M_.JPG",
+                nasaRes.getPhotos().get(855).getImg_src()
         );
     }
 

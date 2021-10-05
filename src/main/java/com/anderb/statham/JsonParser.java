@@ -18,11 +18,12 @@ public class JsonParser {
     }
 
     public static JsonResult parseKey(String json, int startFrom) {
-        int innerStart = json.indexOf('"', startFrom);
-        if (innerStart == -1) return JsonResult.empty();
-        int end = json.indexOf("\":", innerStart);
-        if (innerStart + 1 > end) return JsonResult.empty();
-        return JsonResult.of(json.substring(innerStart + 1, end), STRING, end);
+        startFrom = skipWhiteSpaces(json, startFrom);
+        int stringStart = json.indexOf('"', startFrom);
+        if (stringStart == -1) return JsonResult.empty();
+        int end = json.indexOf("\":", stringStart);
+        if (stringStart + 1 > end) return JsonResult.empty();
+        return JsonResult.of(json.substring(stringStart + 1, end), STRING, end);
     }
 
     public static JsonResult parseToString(String json, int startFrom) {
@@ -54,14 +55,14 @@ public class JsonParser {
         return JsonResult.of(null, NULL, end);
     }
 
-    public static JsonResult parseToObject(String innerJson, int startFrom) {
-        startFrom = skipWhiteSpaces(innerJson, startFrom);
-        innerJson = innerJson.substring(startFrom, findEndingElementIndex(innerJson, '{', '}', startFrom) + 1);
+    public static JsonResult parseToObject(String json, int startFrom) {
+        startFrom = skipWhiteSpaces(json, startFrom);
+        var innerJson = json.substring(startFrom, findEndingElementIndex(json, '{', '}', startFrom) + 1);
         var jsonMap = new HashMap<String, Object>();
         int initStart = startFrom;
-        startFrom = 1;
+        startFrom = 0;
         while (startFrom < innerJson.length()) {
-            var keyResult = parseKey(innerJson, startFrom + 1);
+            var keyResult = parseKey(innerJson, startFrom);
             if (keyResult.getElementType() == EMPTY) break;
             startFrom = keyResult.getEnd() + 2;
 
@@ -78,18 +79,18 @@ public class JsonParser {
 
     public static JsonResult parseToList(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        json = json.substring(startFrom, findEndingElementIndex(json, '[', ']', startFrom) + 1);
+        var innerJson = json.substring(startFrom, findEndingElementIndex(json, '[', ']', startFrom) + 1);
         var array = new ArrayList<>();
         int initStart = startFrom;
         startFrom = 1;
-        while (startFrom < json.length()) {
-            var type = resolveType(json, startFrom + 1);
-            var valRes = type.getParser().parse(json, startFrom + 1);
+        while (startFrom < innerJson.length()) {
+            var type = resolveType(innerJson, startFrom);
+            var valRes = type.getParser().parse(innerJson, startFrom);
             if (valRes.getElementType() == EMPTY) break;
             array.add(valRes.getValue());
             startFrom = valRes.getEnd() + 1;
         }
-        return JsonResult.of(array, ARRAY, initStart + json.length());
+        return JsonResult.of(array, ARRAY, initStart + innerJson.length());
     }
 
     public static JsonType resolveType(String json, int start) {
@@ -105,16 +106,17 @@ public class JsonParser {
     }
 
     public static int findEndingElementIndex(String json, char startChar, char endChar, int startFrom) {
-        int midCount = 0;
         while (startFrom < json.length()) {
-            int end = json.indexOf(endChar, startFrom + 1);
+            int end = json.indexOf(endChar, startFrom);
             if (end == -1) break;
             int betweenCount = countBetween(json, startFrom, end, startChar);
-            if (betweenCount == 0 && midCount == 0) return end;
-            startFrom = end + 1;
-            midCount += betweenCount - 1;
+            if (betweenCount == 0) return end;
+            startFrom = skip(json, end, betweenCount, endChar);
+            if (startFrom == -1)
+                throw new IllegalStateException("No ending element for starting symbol '" + startChar + "'");
+            startFrom++;
         }
-        throw new IllegalStateException("No ending element for starting symbol '" + startChar + "'");
+        return startFrom - 1;
     }
 
     public static int skipWhiteSpaces(String json, int startFrom) {
@@ -128,6 +130,13 @@ public class JsonParser {
             if (json.charAt(i) == ch) count++;
         }
         return count;
+    }
+
+    private static int skip(String json, int start, int count, char ch) {
+        while (count-- > 0) {
+            start = json.indexOf(ch, start + 1);
+        }
+        return start;
     }
 
 }

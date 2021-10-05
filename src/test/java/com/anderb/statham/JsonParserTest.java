@@ -69,5 +69,8 @@ class JsonParserTest {
                         "                   {", 0, 66, '{'));
         assertEquals(0, JsonParser.countBetween("", 0, "".length(), '{'));
         assertEquals(5, JsonParser.countBetween("[][][][][][][][][]", 0, 10, ']'));
+        assertEquals(0, JsonParser.countBetween("{{{{{{{{{{", 0, 10, '}'));
+        assertEquals(9, JsonParser.countBetween("{{{{{{{{{{", 0, 10, '{'));
+        assertEquals(8, JsonParser.countBetween("{{{{{{{{{}", 0, 10, '{'));
     }
 }
