@@ -1,12 +1,15 @@
 package com.anderb.statham;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class StathamTest {
 
@@ -76,20 +79,17 @@ class StathamTest {
                 "  ]\n" +
                 "}";
         NasaRes nasaRes = new Statham().jsonToObj(json, NasaRes.class);
-        System.out.println(nasaRes);
-    }
-
-    @Test
-    void findEndElementIndex() {
-        String json =
-                "{\n" +
-                "  \"first\": {\n" +
-                "    \"second\": {\n" +
-                "      \"key\": \"value\" \n" +
-                "    }\n" +
-                "  }\n" +
-                "}";
-        assertEquals(63, JsonParser.findEndElementIndex(json, '{', '}', 0));
+        assertNotNull(nasaRes);
+        assertNotNull(nasaRes.getPhotos());
+        assertEquals(2, nasaRes.getPhotos().size());
+        assertEquals(
+                "http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/00010/soas/rdr/ccam/CR0_398380645PRCLF0030000CCAM04010L1.PNG",
+                nasaRes.getPhotos().get(0).getImg_src()
+        );
+        assertEquals(
+                "http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/00010/opgs/edr/ccam/CR0_398381687EDR_F0030000CCAM05010M_.JPG",
+                nasaRes.getPhotos().get(1).getImg_src()
+        );
     }
 
     @Data

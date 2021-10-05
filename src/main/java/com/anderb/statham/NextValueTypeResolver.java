@@ -2,10 +2,10 @@ package com.anderb.statham;
 
 import static com.anderb.statham.JsonType.*;
 
-public class NextValueTypeResolver implements TypeResolver {
+public class NextValueTypeResolver implements JsonTypeResolver {
     @Override
     public JsonType resolveType(String json, int start) {
-        start = JsonParser.skipWhiteSpace(json, start);
+        start = JsonParser.skipWhiteSpaces(json, start);
         char ch = json.charAt(start);
         if (ch == '"') return STRING;
         if (Character.isDigit(ch)) return NUMBER;
@@ -13,6 +13,6 @@ public class NextValueTypeResolver implements TypeResolver {
         if (ch == 'n') return NULL;
         if (ch == '{') return OBJECT;
         if (ch == '[') return ARRAY;
-        return NO_MORE_ELEMENTS;
+        return EMPTY;
     }
 }
