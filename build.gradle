@@ -3,7 +3,8 @@ plugins {
 }
 
 group 'com.anderb.statham'
-version '1.0-SNAPSHOT'
+version '0.1-RELEASE'
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
