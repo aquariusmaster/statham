@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import static com.anderb.statham.JsonType.*;
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
 
 @UtilityClass
@@ -22,37 +23,31 @@ public class JsonParser {
         int stringStart = json.indexOf('"', startFrom);
         if (stringStart == -1) return JsonResult.empty();
         int end = json.indexOf("\":", stringStart);
-        if (stringStart + 1 > end) return JsonResult.empty();
-        return JsonResult.of(json.substring(stringStart + 1, end), STRING, end);
+        return stringStart >= end ? JsonResult.empty() : JsonResult.of(json.substring(stringStart + 1, end), STRING, end);
     }
 
     public static JsonResult parseToString(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
         int end = json.indexOf('"', startFrom + 1);
-        if (end == -1) return JsonResult.empty();
-        return JsonResult.of(json.substring(startFrom + 1, end), STRING, end);
+        return end != -1 ? JsonResult.of(json.substring(startFrom + 1, end), STRING, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToNumber(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int end = json.indexOf(',', startFrom + 1);
-        if (end == -1) return JsonResult.empty();
-        var value = json.substring(startFrom, end);
-        return JsonResult.of(value, NUMBER, end);
+        int end = findEnd(json, startFrom);
+        return end != -1 ? JsonResult.of(json.substring(startFrom, end), NUMBER, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToBoolean(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int end = json.indexOf(',', startFrom + 1);
-        if (end == -1) return JsonResult.empty();
-        return JsonResult.of(parseBoolean(json.substring(startFrom, end)), BOOLEAN, end);
+        int end = findEnd(json, startFrom);
+        return end != -1 ? JsonResult.of(parseBoolean(json.substring(startFrom, end)), BOOLEAN, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToNull(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int end = json.indexOf(',', startFrom + 1);
-        if (end == -1) return JsonResult.empty();
-        return JsonResult.of(null, NULL, end);
+        int end = findEnd(json, startFrom);
+        return end != -1 ? JsonResult.of(null, NULL, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToObject(String json, int startFrom) {
@@ -97,7 +92,7 @@ public class JsonParser {
         start = JsonParser.skipWhiteSpaces(json, start);
         char ch = json.charAt(start);
         if (ch == '"') return STRING;
-        if (Character.isDigit(ch)) return NUMBER;
+        if (isDigit(ch)) return NUMBER;
         if (ch == 't' || ch == 'f') return BOOLEAN;
         if (ch == 'n') return NULL;
         if (ch == '{') return OBJECT;
@@ -137,6 +132,31 @@ public class JsonParser {
             start = json.indexOf(ch, start + 1);
         }
         return start;
+    }
+
+    private static int findEnd(String json, int startFrom) {
+        int end = json.indexOf(',', startFrom + 1);
+        if (end != -1) return end;
+        end = findMinEnd(
+                json.indexOf('_', startFrom + 1),
+                json.indexOf('\n', startFrom + 1),
+                json.indexOf('}', startFrom + 1)
+        );
+        if (end == -1) throw new IllegalStateException("No valid json end for '" + startFrom + "' position");
+        return end;
+    }
+
+    private static int findMinEnd(int... values) {
+        if (values.length == 1) return values[0];
+        int min = -1;
+        for (int value : values) {
+            if (value != -1 && min == -1) {
+                min = value;
+                continue;
+            }
+            if (value != -1 && value < min) min = value;
+        }
+        return min;
     }
 
 }

@@ -41,6 +41,28 @@ class StathamTest {
     }
 
     @Test
+    void parseToObj_whenEndByElement_returnValidResult() {
+        var json = "{\n" +
+                "  \"firstName\": \"Andrii\",\n" +
+                "  \"lastName\": \"Petrov\",\n" +
+                "  \"email\": \"apetrov@gmail.com\",\n" +
+                "  \"active\": true,\n" +
+                "  \"age\": 19\n" +
+                "}";
+        User actual = new Statham().jsonToObj(json, User.class);
+        assertNotNull(actual);
+        User expected = new User(
+                "Andrii",
+                "Petrov",
+                "apetrov@gmail.com",
+                19,
+                true,
+                null
+        );
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void parseToObj_withList() {
         var json = "{\n" +
                 "  \"photos\": [\n" +
@@ -100,7 +122,7 @@ class StathamTest {
 
     @Test
     void parseToObj_largeObject() throws IOException {
-        String json = Files.readString(Paths.get("/home/anderb/workspace/IdeaProjects/ajson/src/test/resources/large.json"));
+        String json = Files.readString(Paths.get("src/test/resources/large.json"));
         NasaRes nasaRes = new Statham().jsonToObj(json, NasaRes.class);
         assertNotNull(nasaRes);
         assertNotNull(nasaRes.getPhotos());
