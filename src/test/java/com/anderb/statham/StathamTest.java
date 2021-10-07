@@ -41,7 +41,7 @@ class StathamTest {
     }
 
     @Test
-    void parseToObj_whenEndByElement_returnValidResult() {
+    void parseToObj_whenEndNotComma_returnValidResult() {
         var json = "{\n" +
                 "  \"firstName\": \"Andrii\",\n" +
                 "  \"lastName\": \"Petrov\",\n" +
