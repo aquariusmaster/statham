@@ -16,10 +16,12 @@ public class BaseHydrator implements Hydrator {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public <T> T hydrate(Object jsonObj, Class<T> clazz) {
+        if (jsonObj == null) return null;
         if (jsonObj instanceof List) {
             return (T) hydrateList((List) jsonObj, clazz);
         }
         var jsonMap = (Map<String, Object>) jsonObj;
+        if (jsonMap.isEmpty()) return null;
         T instance = clazz.getDeclaredConstructor().newInstance();
         for (var field : clazz.getDeclaredFields()) {
             var value = jsonMap.get(field.getName());

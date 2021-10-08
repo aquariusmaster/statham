@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static com.anderb.statham.JsonType.*;
-import static java.lang.Boolean.parseBoolean;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
 
@@ -15,77 +14,78 @@ public class JsonParser {
 
     public static Object parse(String json) {
         var type = resolveType(json, 0);
-        return type.getParser().parse(json, 0).getValue();
+        return type != null ? type.getParser().parse(json, 0).getValue() : null;
     }
 
     public static JsonResult parseKey(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
         startFrom = json.indexOf('"', startFrom);
         if (startFrom == -1) return JsonResult.empty();
-        int end = json.indexOf("\":", startFrom);
-        return startFrom < end ? JsonResult.of(json.substring(startFrom + 1, end), STRING, end + 2) : JsonResult.empty();
+        int end = json.indexOf('\"', startFrom + 1);
+        int delimiterIndex = json.indexOf(':', end);
+        return startFrom < end ? JsonResult.of(json.substring(startFrom + 1, end), STRING, delimiterIndex + 1) : JsonResult.empty();
     }
 
     public static JsonResult parseToString(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int end = json.indexOf('"', startFrom + 1);
-        return startFrom < end ? JsonResult.of(json.substring(startFrom + 1, end), STRING, end) : JsonResult.empty();
+        int stringEnd = json.indexOf('"', startFrom + 1);
+        return JsonResult.of(json.substring(startFrom + 1, stringEnd), STRING, json.indexOf(',', stringEnd));
     }
 
     public static JsonResult parseToNumber(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int end = findEnd(json, startFrom);
-        return startFrom < end ? JsonResult.of(json.substring(startFrom, end), NUMBER, end) : JsonResult.empty();
+        int numberEnd = findValueEnd(json, startFrom);
+        return JsonResult.of(json.substring(startFrom, numberEnd), NUMBER, json.indexOf(',', numberEnd));
     }
 
     public static JsonResult parseToBoolean(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int end = findEnd(json, startFrom);
-        return startFrom < end ? JsonResult.of(parseBoolean(json.substring(startFrom, end)), BOOLEAN, end) : JsonResult.empty();
+        boolean value = json.charAt(startFrom) == 't';
+        return JsonResult.of(value, BOOLEAN, json.indexOf(',', startFrom + 4));
     }
 
     public static JsonResult parseToNull(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int end = findEnd(json, startFrom);
-        return startFrom < end ? JsonResult.of(null, NULL, end) : JsonResult.empty();
+        return JsonResult.of(null, NULL, json.indexOf(',', startFrom + 4));
     }
 
     public static JsonResult parseToObject(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        var innerJson = json.substring(startFrom, findEndingElementIndex(json, '{', '}', startFrom) + 1);
+        json = json.substring(startFrom, findEndingElementIndex(json, '{', '}', startFrom) + 1);
         var jsonMap = new HashMap<String, Object>();
         int initStart = startFrom;
         startFrom = 0;
-        while (startFrom < innerJson.length()) {
-            var keyResult = parseKey(innerJson, startFrom);
-            if (keyResult.getElementType() == EMPTY) break;
+        while (startFrom < json.length()) {
+            var keyResult = parseKey(json, startFrom);
+            if (keyResult.getElementType() == null) break;
             startFrom = keyResult.getEnd();
 
-            var type = resolveType(innerJson, startFrom);
-            if (type == EMPTY) break;
+            var type = resolveType(json, startFrom);
+            if (type == null) break;
 
-            var valueResult = type.getParser().parse(innerJson, startFrom);
-            startFrom = valueResult.getEnd() + 1;
-
+            var valueResult = type.getParser().parse(json, startFrom);
             jsonMap.put((String) keyResult.getValue(), valueResult.getValue());
+            if (valueResult.getEnd() == -1) break;
+            startFrom = valueResult.getEnd() + 1;
         }
-        return JsonResult.of(jsonMap, OBJECT, initStart + innerJson.length());
+        return JsonResult.of(jsonMap, OBJECT, initStart + json.length());
     }
 
     public static JsonResult parseToList(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        var innerJson = json.substring(startFrom, findEndingElementIndex(json, '[', ']', startFrom) + 1);
+        json = json.substring(startFrom, findEndingElementIndex(json, '[', ']', startFrom) + 1);
         var array = new ArrayList<>();
         int initStart = startFrom;
         startFrom = 1;
-        while (startFrom < innerJson.length()) {
-            var type = resolveType(innerJson, startFrom);
-            var valRes = type.getParser().parse(innerJson, startFrom);
-            if (valRes.getElementType() == EMPTY) break;
+        while (startFrom < json.length()) {
+            var type = resolveType(json, startFrom);
+            if (type == null) break;
+            var valRes = type.getParser().parse(json, startFrom);
+            if (valRes.getElementType() == null) break;
             array.add(valRes.getValue());
             startFrom = valRes.getEnd() + 1;
         }
-        return JsonResult.of(array, ARRAY, initStart + innerJson.length());
+        return JsonResult.of(array, ARRAY, initStart + json.length());
     }
 
     public static JsonType resolveType(String json, int start) {
@@ -97,7 +97,7 @@ public class JsonParser {
         if (ch == 'n') return NULL;
         if (ch == '{') return OBJECT;
         if (ch == '[') return ARRAY;
-        return EMPTY;
+        return null;
     }
 
     public static int findEndingElementIndex(String json, char startChar, char endChar, int startFrom) {
@@ -134,10 +134,9 @@ public class JsonParser {
         return start;
     }
 
-    private static int findEnd(String json, int startFrom) {
-        int end = json.indexOf(',', startFrom + 1);
-        if (end != -1) return end;
-        end = findMinEnd(
+    private static int findValueEnd(String json, int startFrom) {
+        int end = findMinValueEnd(
+                json.indexOf(',', startFrom + 1),
                 json.indexOf(' ', startFrom + 1),
                 json.indexOf('\n', startFrom + 1),
                 json.indexOf('}', startFrom + 1)
@@ -146,7 +145,7 @@ public class JsonParser {
         return end;
     }
 
-    private static int findMinEnd(int... values) {
+    private static int findMinValueEnd(int... values) {
         if (values.length == 1) return values[0];
         int min = -1;
         for (int value : values) {

@@ -3,8 +3,6 @@ package com.anderb.statham;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import static com.anderb.statham.JsonResult.empty;
-
 @Getter
 @RequiredArgsConstructor
 public enum JsonType {
@@ -13,8 +11,7 @@ public enum JsonType {
     BOOLEAN(JsonParser::parseToBoolean),
     NULL(JsonParser::parseToNull),
     OBJECT(JsonParser::parseToObject),
-    ARRAY(JsonParser::parseToList),
-    EMPTY((json, start) -> empty());
+    ARRAY(JsonParser::parseToList);
 
-    private final ElementParser parser;
+    private final JsonValueParser parser;
 }

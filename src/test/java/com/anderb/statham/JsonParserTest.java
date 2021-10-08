@@ -7,38 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class JsonParserTest {
 
     @Test
-    void parse() {
-    }
-
-    @Test
-    void keyParser() {
-    }
-
-    @Test
-    void parseToString() {
-    }
-
-    @Test
-    void parseToNumber() {
-    }
-
-    @Test
-    void parseToBoolean() {
-    }
-
-    @Test
-    void parseToNull() {
-    }
-
-    @Test
-    void parseToObject() {
-    }
-
-    @Test
-    void parseToList() {
-    }
-
-    @Test
     void findEndElementIndex() {
         String json = "{\n" +
                 "  \"first\": {\n" +
@@ -73,4 +41,37 @@ class JsonParserTest {
         assertEquals(9, JsonParser.countBetween("{{{{{{{{{{", 0, 10, '{'));
         assertEquals(8, JsonParser.countBetween("{{{{{{{{{}", 0, 10, '{'));
     }
+
+    @Test
+    void parse() {
+    }
+
+    @Test
+    void keyParser() {
+    }
+
+    @Test
+    void parseToString() {
+    }
+
+    @Test
+    void parseToNumber() {
+    }
+
+    @Test
+    void parseToBoolean() {
+    }
+
+    @Test
+    void parseToNull() {
+    }
+
+    @Test
+    void parseToObject() {
+    }
+
+    @Test
+    void parseToList() {
+    }
+
 }

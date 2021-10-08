@@ -9,8 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class StathamTest {
 
@@ -26,6 +25,32 @@ class StathamTest {
                 "    \"line1\": \"Kiev\",\n" +
                 "    \"line2\": \"Svitla\"\n" +
                 "  }\n" +
+                "}";
+        User actual = new Statham().jsonToObj(json, User.class);
+        assertNotNull(actual);
+        User expected = new User(
+                "Andrii",
+                "Petrov",
+                "apetrov@gmail.com",
+                19,
+                true,
+                new Address("Kiev", "Svitla")
+        );
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void parseToObj_withJsonHasWhiteSpaces_returnValidResult() {
+        var json = "{\n" +
+                "\"firstName\":          \"Andrii\",\n" +
+                "  \"lastName\": \"Petrov\"      ,     \n" +
+                "  \"email\" :\"apetrov@gmail.com\",\n" +
+                "  \"age\": 19,\n" +
+                "  \"address\": {\n" +
+                "    \"line1\":\"Kiev\" , \n" +
+                "    \"line2\": \"Svitla\"\n" +
+                "  } ,  \n" +
+                "  \"active\"      : true   \n" +
                 "}";
         User actual = new Statham().jsonToObj(json, User.class);
         assertNotNull(actual);
@@ -60,6 +85,13 @@ class StathamTest {
                 null
         );
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void parseToObj_withEmptyJson_returnNull() {
+        var json = "{}";
+        User actual = new Statham().jsonToObj(json, User.class);
+        assertNull(actual);
     }
 
     @Test
