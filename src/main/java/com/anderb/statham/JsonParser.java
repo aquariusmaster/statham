@@ -20,34 +20,34 @@ public class JsonParser {
 
     public static JsonResult parseKey(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        int stringStart = json.indexOf('"', startFrom);
-        if (stringStart == -1) return JsonResult.empty();
-        int end = json.indexOf("\":", stringStart);
-        return stringStart >= end ? JsonResult.empty() : JsonResult.of(json.substring(stringStart + 1, end), STRING, end);
+        startFrom = json.indexOf('"', startFrom);
+        if (startFrom == -1) return JsonResult.empty();
+        int end = json.indexOf("\":", startFrom);
+        return startFrom < end ? JsonResult.of(json.substring(startFrom + 1, end), STRING, end + 2) : JsonResult.empty();
     }
 
     public static JsonResult parseToString(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
         int end = json.indexOf('"', startFrom + 1);
-        return end != -1 ? JsonResult.of(json.substring(startFrom + 1, end), STRING, end) : JsonResult.empty();
+        return startFrom < end ? JsonResult.of(json.substring(startFrom + 1, end), STRING, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToNumber(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
         int end = findEnd(json, startFrom);
-        return end != -1 ? JsonResult.of(json.substring(startFrom, end), NUMBER, end) : JsonResult.empty();
+        return startFrom < end ? JsonResult.of(json.substring(startFrom, end), NUMBER, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToBoolean(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
         int end = findEnd(json, startFrom);
-        return end != -1 ? JsonResult.of(parseBoolean(json.substring(startFrom, end)), BOOLEAN, end) : JsonResult.empty();
+        return startFrom < end ? JsonResult.of(parseBoolean(json.substring(startFrom, end)), BOOLEAN, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToNull(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
         int end = findEnd(json, startFrom);
-        return end != -1 ? JsonResult.of(null, NULL, end) : JsonResult.empty();
+        return startFrom < end ? JsonResult.of(null, NULL, end) : JsonResult.empty();
     }
 
     public static JsonResult parseToObject(String json, int startFrom) {
@@ -59,7 +59,7 @@ public class JsonParser {
         while (startFrom < innerJson.length()) {
             var keyResult = parseKey(innerJson, startFrom);
             if (keyResult.getElementType() == EMPTY) break;
-            startFrom = keyResult.getEnd() + 2;
+            startFrom = keyResult.getEnd();
 
             var type = resolveType(innerJson, startFrom);
             if (type == EMPTY) break;
@@ -138,7 +138,7 @@ public class JsonParser {
         int end = json.indexOf(',', startFrom + 1);
         if (end != -1) return end;
         end = findMinEnd(
-                json.indexOf('_', startFrom + 1),
+                json.indexOf(' ', startFrom + 1),
                 json.indexOf('\n', startFrom + 1),
                 json.indexOf('}', startFrom + 1)
         );
