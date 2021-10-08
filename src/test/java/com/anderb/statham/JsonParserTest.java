@@ -2,7 +2,10 @@ package com.anderb.statham;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class JsonParserTest {
 
@@ -43,6 +46,50 @@ class JsonParserTest {
     }
 
     @Test
+    void parseToList() {
+        var json = "[1,2,3,4]";
+        List actual = (List) JsonParser.parseToList(json, 0).getValue();
+        assertNotNull(actual);
+        assertEquals("1", actual.get(0));
+        assertEquals("2", actual.get(1));
+        assertEquals("3", actual.get(2));
+        assertEquals("4", actual.get(3));
+    }
+
+    @Test
+    void parseToList_strings() {
+        var json = "[\"a\",\"b\",\"c\",\"d\"]";
+        List actual = (List) JsonParser.parseToList(json, 0).getValue();
+        assertNotNull(actual);
+        assertEquals("a", actual.get(0));
+        assertEquals("b", actual.get(1));
+        assertEquals("c", actual.get(2));
+        assertEquals("d", actual.get(3));
+    }
+
+    @Test
+    void parseToList_boolean() {
+        var json = "[true,false,false,true]";
+        List actual = (List) JsonParser.parseToList(json, 0).getValue();
+        assertNotNull(actual);
+        assertEquals(true, actual.get(0));
+        assertEquals(false, actual.get(1));
+        assertEquals(false, actual.get(2));
+        assertEquals(true, actual.get(3));
+    }
+
+    @Test
+    void parseToList_withNull() {
+        var json = "[\"true\",null,\"323\",\"any\"]";
+        List actual = (List) JsonParser.parseToList(json, 0).getValue();
+        assertNotNull(actual);
+        assertEquals("true", actual.get(0));
+        assertEquals(null, actual.get(1));
+        assertEquals("323", actual.get(2));
+        assertEquals("any", actual.get(3));
+    }
+
+    @Test
     void parse() {
     }
 
@@ -68,10 +115,6 @@ class JsonParserTest {
 
     @Test
     void parseToObject() {
-    }
-
-    @Test
-    void parseToList() {
     }
 
 }

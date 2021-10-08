@@ -8,6 +8,7 @@ import java.util.HashMap;
 import static com.anderb.statham.JsonType.*;
 import static java.lang.Character.isDigit;
 import static java.lang.Character.isWhitespace;
+import static java.util.Collections.emptyList;
 
 @UtilityClass
 public class JsonParser {
@@ -28,12 +29,14 @@ public class JsonParser {
 
     public static JsonResult parseToString(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
+        if (json.charAt(startFrom) == 'n') return JsonResult.nil(json.indexOf(',', startFrom + 4));
         int stringEnd = json.indexOf('"', startFrom + 1);
         return JsonResult.of(json.substring(startFrom + 1, stringEnd), STRING, json.indexOf(',', stringEnd));
     }
 
     public static JsonResult parseToNumber(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
+        if (json.charAt(startFrom) == 'n') return JsonResult.nil(json.indexOf(',', startFrom + 4));
         int numberEnd = findValueEnd(json, startFrom);
         return JsonResult.of(json.substring(startFrom, numberEnd), NUMBER, json.indexOf(',', numberEnd));
     }
@@ -74,15 +77,16 @@ public class JsonParser {
     public static JsonResult parseToList(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
         json = json.substring(startFrom, findEndingElementIndex(json, '[', ']', startFrom) + 1);
-        var array = new ArrayList<>();
         int initStart = startFrom;
         startFrom = 1;
+        var type = resolveType(json, startFrom);
+        if (type == null) return JsonResult.of(emptyList(), ARRAY, initStart + json.length());
+        var array = new ArrayList<>();
         while (startFrom < json.length()) {
-            var type = resolveType(json, startFrom);
-            if (type == null) break;
             var valRes = type.getParser().parse(json, startFrom);
             if (valRes.getElementType() == null) break;
             array.add(valRes.getValue());
+            if (valRes.getEnd() == -1) break;
             startFrom = valRes.getEnd() + 1;
         }
         return JsonResult.of(array, ARRAY, initStart + json.length());
