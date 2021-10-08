@@ -89,7 +89,7 @@ public class JsonParser {
     }
 
     public static JsonType resolveType(String json, int start) {
-        start = JsonParser.skipWhiteSpaces(json, start);
+        start = skipWhiteSpaces(json, start);
         char ch = json.charAt(start);
         if (ch == '"') return STRING;
         if (isDigit(ch)) return NUMBER;
@@ -139,7 +139,8 @@ public class JsonParser {
                 json.indexOf(',', startFrom + 1),
                 json.indexOf(' ', startFrom + 1),
                 json.indexOf('\n', startFrom + 1),
-                json.indexOf('}', startFrom + 1)
+                json.indexOf('}', startFrom + 1),
+                json.indexOf(']', startFrom + 1)
         );
         if (end == -1) throw new IllegalStateException("No valid json end for '" + startFrom + "' position");
         return end;

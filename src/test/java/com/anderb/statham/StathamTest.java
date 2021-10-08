@@ -3,11 +3,13 @@ package com.anderb.statham;
 import com.anderb.statham.TestUtils.Address;
 import com.anderb.statham.TestUtils.NasaRes;
 import com.anderb.statham.TestUtils.User;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -91,6 +93,14 @@ class StathamTest {
     void parseToObj_withEmptyJson_returnNull() {
         var json = "{}";
         User actual = new Statham().jsonToObj(json, User.class);
+        assertNull(actual);
+    }
+
+    @Test
+    @Disabled
+    void parseToObj_withArray_returnNull() {
+        var json = "[1,2,3,4]";
+        List actual = new Statham().jsonToObj(json, List.class);
         assertNull(actual);
     }
 
