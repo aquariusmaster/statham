@@ -29,14 +29,12 @@ public class JsonParser {
 
     public static JsonResult parseToString(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        if (json.charAt(startFrom) == 'n') return JsonResult.nil(json.indexOf(',', startFrom + 4));
         int stringEnd = json.indexOf('"', startFrom + 1);
         return JsonResult.of(json.substring(startFrom + 1, stringEnd), STRING, json.indexOf(',', stringEnd));
     }
 
     public static JsonResult parseToNumber(String json, int startFrom) {
         startFrom = skipWhiteSpaces(json, startFrom);
-        if (json.charAt(startFrom) == 'n') return JsonResult.nil(json.indexOf(',', startFrom + 4));
         int numberEnd = findValueEnd(json, startFrom);
         return JsonResult.of(json.substring(startFrom, numberEnd), NUMBER, json.indexOf(',', numberEnd));
     }
@@ -79,10 +77,10 @@ public class JsonParser {
         json = json.substring(startFrom, findEndingElementIndex(json, '[', ']', startFrom) + 1);
         int initStart = startFrom;
         startFrom = 1;
-        var type = resolveType(json, startFrom);
-        if (type == null) return JsonResult.of(emptyList(), ARRAY, initStart + json.length());
         var array = new ArrayList<>();
         while (startFrom < json.length()) {
+            var type = resolveType(json, startFrom);
+            if (type == null) break;
             var valRes = type.getParser().parse(json, startFrom);
             if (valRes.getElementType() == null) break;
             array.add(valRes.getValue());
@@ -139,28 +137,20 @@ public class JsonParser {
     }
 
     private static int findValueEnd(String json, int startFrom) {
-        int end = findMinValueEnd(
-                json.indexOf(',', startFrom + 1),
-                json.indexOf(' ', startFrom + 1),
-                json.indexOf('\n', startFrom + 1),
-                json.indexOf('}', startFrom + 1),
-                json.indexOf(']', startFrom + 1)
-        );
+        int end = findMinValueEnd(json, startFrom, ',', ' ', '\n', '}', ']');
         if (end == -1) throw new IllegalStateException("No valid json end for '" + startFrom + "' position");
         return end;
     }
 
-    private static int findMinValueEnd(int... values) {
-        if (values.length == 1) return values[0];
-        int min = -1;
-        for (int value : values) {
-            if (value != -1 && min == -1) {
-                min = value;
-                continue;
+    private static int findMinValueEnd(String json, int startFrom, char... chars) {
+        if (chars.length == 1) return json.indexOf(chars[0], startFrom);
+        while (++startFrom < json.length()) {
+            char cur = json.charAt(startFrom);
+            for (char value : chars) {
+                if (cur == value) return startFrom;
             }
-            if (value != -1 && value < min) min = value;
         }
-        return min;
+        return -1;
     }
 
 }

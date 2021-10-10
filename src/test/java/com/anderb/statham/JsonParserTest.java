@@ -4,8 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JsonParserTest {
 
@@ -31,13 +30,13 @@ class JsonParserTest {
 
     @Test
     void countBetween() {
-        assertEquals(5, JsonParser.countBetween(
-                "{\n" +
-                        "   {\n" +
-                        "       {\n" +
-                        "           {\n" +
-                        "               {\n" +
-                        "                   {", 0, 66, '{'));
+        assertEquals(5,
+                JsonParser.countBetween(
+                        "{\n    {\n       {\n           {\n               {\n                   {",
+                        0,
+                        67,
+                        '{')
+        );
         assertEquals(0, JsonParser.countBetween("", 0, "".length(), '{'));
         assertEquals(5, JsonParser.countBetween("[][][][][][][][][]", 0, 10, ']'));
         assertEquals(0, JsonParser.countBetween("{{{{{{{{{{", 0, 10, '}'));
@@ -79,14 +78,20 @@ class JsonParserTest {
     }
 
     @Test
-    void parseToList_withNull() {
-        var json = "[\"true\",null,\"323\",\"any\"]";
+    void parseToList_withAnyTypes() {
+        var json = "[\"true\",null,\"323\",\"any\", 456, true,  false,19 ]";
         List actual = (List) JsonParser.parseToList(json, 0).getValue();
         assertNotNull(actual);
+        assertEquals(8, actual.size());
         assertEquals("true", actual.get(0));
-        assertEquals(null, actual.get(1));
+        assertNull(actual.get(1));
         assertEquals("323", actual.get(2));
         assertEquals("any", actual.get(3));
+        assertEquals("456", actual.get(4));
+        assertEquals(true, actual.get(5));
+        assertEquals(false, actual.get(6));
+        assertEquals("19", actual.get(7));
+
     }
 
     @Test
