@@ -8,6 +8,8 @@ import static com.anderb.statham.JsonType.NULL;
 @RequiredArgsConstructor
 @Getter
 public class JsonResult {
+    private static JsonResult EMPTY = new JsonResult(null, null, -1);
+
     private final Object value;
     private final JsonType elementType;
     private final int end;
@@ -17,7 +19,7 @@ public class JsonResult {
     }
 
     public static JsonResult empty() {
-        return new JsonResult(null, null, -1);
+        return EMPTY;
     }
 
     public static JsonResult nil(int end) {
