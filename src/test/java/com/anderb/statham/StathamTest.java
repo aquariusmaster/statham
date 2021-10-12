@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static com.anderb.statham.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StathamTest {
@@ -151,10 +152,10 @@ class StathamTest {
         NasaRes actualResult = new Statham().jsonToObj(json, NasaRes.class);
         NasaRes expected = NasaRes.builder()
                 .photos(List.of(
-                        TestUtils.Photo.builder()
+                        Photo.builder()
                                 .id(1L)
                                 .sol(10L)
-                                .camera(TestUtils.Camera.builder()
+                                .camera(Camera.builder()
                                         .id(11L)
                                         .name("CHEMCAM")
                                         .rover_id(5L)
@@ -162,7 +163,7 @@ class StathamTest {
                                         .build())
                                 .earth_date("2012-08-16")
                                 .img_src("http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/00010/soas/rdr/ccam/CR0_398380645PRCLF0030000CCAM04010L1.PNG")
-                                .rover(TestUtils.Rover.builder()
+                                .rover(Rover.builder()
                                         .id(111L)
                                         .name("Curiosity")
                                         .landing_date("2012-08-06")
@@ -170,10 +171,10 @@ class StathamTest {
                                         .status("active")
                                         .build())
                                 .build(),
-                        TestUtils.Photo.builder()
+                        Photo.builder()
                                 .id(2L)
                                 .sol(10L)
-                                .camera(TestUtils.Camera.builder()
+                                .camera(Camera.builder()
                                         .id(22L)
                                         .name("CHEMCAM")
                                         .rover_id(5L)
@@ -181,7 +182,7 @@ class StathamTest {
                                         .build())
                                 .earth_date("2012-08-16")
                                 .img_src("http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/00010/opgs/edr/ccam/CR0_398381687EDR_F0030000CCAM05010M_.JPG")
-                                .rover(TestUtils.Rover.builder()
+                                .rover(Rover.builder()
                                         .id(222L)
                                         .name("Curiosity")
                                         .landing_date("2012-08-06")
@@ -213,6 +214,16 @@ class StathamTest {
                 "http://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/01000/opgs/edr/ncam/NRB_486270860EDR_F0481570NCAM00323M_.JPG",
                 nasaRes.getPhotos().get(855).getImg_src()
         );
+    }
+
+    @Test
+    void parseToObj_wrongObject() throws IOException {
+        String json = Files.readString(Paths.get("src/test/resources/symbols.json"));
+        Camera actual = new Statham().jsonToObj(json, Camera.class);
+        assertNotNull(actual);
+        Camera expected = Camera.builder().id(23L).name("CHEM\\\"CAM,\\\"{}][").rover_id(5L).full_name("Chemistry, and Camera Complex").build();
+
+        assertEquals(expected, actual);
     }
 
 }

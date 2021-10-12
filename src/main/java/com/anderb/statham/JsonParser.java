@@ -31,7 +31,7 @@ public class JsonParser {
 
     public static JsonResult parseToString(String json, int startFrom, int endTo) {
         startFrom = skipWhiteSpaces(json, startFrom, endTo);
-        int stringEnd = json.indexOf('"', startFrom + 1);
+        int stringEnd = findNextValidIndexOf(json, startFrom + 1, endTo, '"');
         return JsonResult.of(json.substring(startFrom + 1, stringEnd), STRING, findNextEnd(json, stringEnd, endTo));
     }
 
@@ -155,4 +155,11 @@ public class JsonParser {
         return end == -1 || end >= endTo ? -1 : end;
     }
 
+    private static int findNextValidIndexOf(String json, int startFrom, int endTo, char ch) {
+        if (startFrom > endTo) return -1;
+        int end = json.indexOf(ch, startFrom);
+        if (end == -1) return -1;
+        if (end < endTo && json.charAt(end - 1) == '\\') return findNextValidIndexOf(json, end + 1, endTo, ch);
+        return end >= endTo ? -1 : end;
+    }
 }

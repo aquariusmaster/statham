@@ -3,6 +3,7 @@ package com.anderb.statham;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -91,11 +92,14 @@ class JsonParserTest {
         assertEquals(true, actual.get(5));
         assertEquals(false, actual.get(6));
         assertEquals("19", actual.get(7));
-
     }
 
     @Test
     void parse() {
+        var json = "{\"key\": \"valu\"e\"}";
+        Map<String, String> actual = (Map<String, String>) JsonParser.parse(json);
+        assertNotNull(actual);
+        assertEquals("valu", actual.get("key"));// TODO fix parsing " chars
     }
 
     @Test
