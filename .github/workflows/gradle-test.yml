@@ -3,7 +3,13 @@
 
 name: Gradle Package
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
 
 jobs:
   build:
@@ -15,7 +21,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 11
+    - name: Set up
       uses: actions/setup-java@v2
       with:
         java-version: '11'
@@ -23,11 +29,26 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Build with Gradle
-      run: gradle build
+    - name: Build
+      run: ./gradlew build -x test
       
     - name: Tests
-      run: gradle test
+      run: ./gradlew test
+
+    - name: Package
+      if: success()
+      uses: actions/upload-artifact@v2
+      with:
+        name: Artifact
+        path: build/libs/*.jar
+        retention-days: 5
+
+    - uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: Test Results
+        path: build/reports/
+        retention-days: 5
 
 
 #     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
