@@ -98,7 +98,7 @@ class StathamTest {
     }
 
     @Test
-//    @Disabled
+    @Disabled
     void parseToObj_withArray_returnNull() {
         var json = "[1,2,3,4]";
         List actual = new Statham().jsonToObj(json, List.class);
