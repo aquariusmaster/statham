@@ -39,13 +39,13 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v2
       with:
-        name: Package
-        path: build/libs
+        name: Artifact
+        path: build/libs/*.jar
 
     - uses: actions/upload-artifact@v2
       if: failure()
       with:
-        name: Package
+        name: Test Results
         path: build/reports/
 
 
