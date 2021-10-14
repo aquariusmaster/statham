@@ -30,18 +30,15 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build -x test
       
     - name: Tests
       run: ./gradlew test
 
-    - name: ls -la
-      run: ls -la
-
     - uses: actions/upload-artifact@v2
-      with:
-        name: test-results
-        path: build/test-results/**/*.xml
+        with:
+          name: Package
+          path: build/libs
 
 
 #     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
