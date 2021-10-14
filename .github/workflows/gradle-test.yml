@@ -3,7 +3,11 @@
 
 name: Gradle Package
 
-on: [push]
+on:
+  push:
+    branches: [ * ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
@@ -28,6 +32,11 @@ jobs:
       
     - name: Tests
       run: gradle test
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: test-results
+        path: build/test-results/**.xml
 
 
 #     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
