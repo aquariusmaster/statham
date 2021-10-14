@@ -5,9 +5,11 @@ name: Gradle Package
 
 on:
   push:
-    branches: [ * ]
+    branches:
+      - '*'
   pull_request:
-    branches: [ master ]
+    branches:
+      - 'master'
 
 jobs:
   build:
