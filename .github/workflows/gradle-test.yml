@@ -20,7 +20,8 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Set up
       uses: actions/setup-java@v2
       with:
@@ -49,12 +50,3 @@ jobs:
         name: Test Results
         path: build/reports/
         retention-days: 5
-
-
-#     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
-#     # the publishing section of your build.gradle
-#     - name: Publish to GitHub Packages
-#       run: gradle publish
-#       env:
-#         USERNAME: ${{ github.actor }}
-#         TOKEN: ${{ secrets.GITHUB_TOKEN }}
