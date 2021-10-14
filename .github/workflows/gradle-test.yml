@@ -35,10 +35,11 @@ jobs:
     - name: Tests
       run: ./gradlew test
 
-    - uses: actions/upload-artifact@v2
-        with:
-          name: Package
-          path: build/libs
+    - name: Package
+      uses: actions/upload-artifact@v2
+      with:
+        name: Package
+        path: build/libs
 
 
 #     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
