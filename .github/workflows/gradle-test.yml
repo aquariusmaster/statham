@@ -39,6 +39,7 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v2
       with:
+        name: Artifact
         path: build/libs/*.jar
         retention-days: 5
 
